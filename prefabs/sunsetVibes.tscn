@@ -1,0 +1,4 @@
+[gd_scene format=2]
+
+[node name="sunsetVibes" type="CanvasModulate"]
+color = Color( 1, 0.556863, 0.203922, 1 )

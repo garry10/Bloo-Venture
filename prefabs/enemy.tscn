@@ -1,0 +1,150 @@
+[gd_scene load_steps=18 format=2]
+
+[ext_resource path="res://Assets/Enemy1.png" type="Texture" id=1]
+[ext_resource path="res://Assets/Enemy2.png" type="Texture" id=2]
+[ext_resource path="res://scripts/enemy.gd" type="Script" id=3]
+[ext_resource path="res://Assets/sfx/explode.wav" type="AudioStream" id=4]
+[ext_resource path="res://prefabs/trail.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Assets/Light_texture.png" type="Texture" id=6]
+[ext_resource path="res://Assets/explosion.png" type="Texture" id=7]
+
+[sub_resource type="CanvasItemMaterial" id=12]
+light_mode = 1
+
+[sub_resource type="Curve" id=13]
+_data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 1, 0.5 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="Gradient" id=7]
+colors = PoolColorArray( 2, 0, 0, 1, 0.174805, 0.174805, 0.174805, 0 )
+
+[sub_resource type="CanvasItemMaterial" id=10]
+light_mode = 1
+
+[sub_resource type="Gradient" id=8]
+resource_local_to_scene = true
+offsets = PoolRealArray( 0.356061, 1 )
+colors = PoolColorArray( 1, 0.117647, 0.117647, 1, 0.172549, 0.0117647, 0.0431373, 1 )
+
+[sub_resource type="CanvasItemMaterial" id=11]
+light_mode = 1
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 1 ), ExtResource( 2 ) ],
+"loop": true,
+"name": "default",
+"speed": 5.0
+} ]
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 3, 2 )
+
+[sub_resource type="RectangleShape2D" id=3]
+extents = Vector2( 2, 2 )
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 1, 1 )
+
+[node name="enemy" type="KinematicBody2D"]
+collision_layer = 4
+script = ExtResource( 3 )
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="."]
+material = SubResource( 12 )
+position = Vector2( 0, -2 )
+emitting = false
+lifetime = 0.75
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.8
+local_coords = false
+texture = ExtResource( 7 )
+spread = 180.0
+gravity = Vector2( 0, 0 )
+initial_velocity = 30.0
+angular_velocity = 180.0
+angular_velocity_random = 1.0
+scale_amount = 0.8
+scale_amount_random = 1.0
+scale_amount_curve = SubResource( 13 )
+color_ramp = SubResource( 7 )
+hue_variation = -1.0
+anim_speed = 128.0
+
+[node name="trailPos" type="Node2D" parent="."]
+show_behind_parent = true
+position = Vector2( 0, -1 )
+
+[node name="trail" parent="trailPos" instance=ExtResource( 5 )]
+material = SubResource( 10 )
+width = 4.0
+default_color = Color( 0.4, 0.501961, 1, 1 )
+gradient = SubResource( 8 )
+length = 40
+
+[node name="Body" type="Node2D" parent="."]
+
+[node name="BodyParts" type="Node2D" parent="Body"]
+
+[node name="body" type="AnimatedSprite" parent="Body/BodyParts"]
+modulate = Color( 1, 0.117647, 0.117647, 1 )
+material = SubResource( 11 )
+position = Vector2( 0, -3 )
+frames = SubResource( 1 )
+playing = true
+
+[node name="Light2D" type="Light2D" parent="Body"]
+texture = ExtResource( 6 )
+color = Color( 1, 0.117647, 0.117647, 1 )
+energy = 0.65
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2( 0, -2 )
+shape = SubResource( 2 )
+
+[node name="top_checker" type="Area2D" parent="."]
+position = Vector2( 0, -3 )
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="top_checker"]
+shape = SubResource( 3 )
+
+[node name="right_checker" type="Area2D" parent="."]
+position = Vector2( 3, -1 )
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="right_checker"]
+shape = SubResource( 4 )
+
+[node name="left_checker" type="Area2D" parent="."]
+position = Vector2( -3, -2 )
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="left_checker"]
+position = Vector2( 0, 1 )
+shape = SubResource( 4 )
+
+[node name="idle_duration" type="Timer" parent="."]
+wait_time = 4.0
+one_shot = true
+
+[node name="guarding_duration" type="Timer" parent="."]
+wait_time = 6.0
+one_shot = true
+
+[node name="ground_checker" type="RayCast2D" parent="."]
+position = Vector2( -4, 0 )
+enabled = true
+cast_to = Vector2( 0, 4 )
+
+[node name="died" type="AudioStreamPlayer2D" parent="."]
+pause_mode = 2
+stream = ExtResource( 4 )
+volume_db = -10.0
+
+[connection signal="body_entered" from="top_checker" to="." method="_on_top_checker_body_entered"]
+[connection signal="body_entered" from="right_checker" to="." method="_on_side_checker_body_entered"]
+[connection signal="body_entered" from="left_checker" to="." method="_on_side_checker_body_entered"]
